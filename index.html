@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Kiyimello</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Unbounded:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --accent: #6C3FE8;
+  --accent2: #F5A623;
+  --cream: #F8F6FF;
+  --cream2: #EEE9FF;
+  --white: #FFFFFF;
+  --text: #1A1A2E;
+  --muted: #7B7B9A;
+  --green: #00C47A;
+  --red: #FF4757;
+  --tg-safe-top: env(safe-area-inset-top, 0px);
+  --tg-safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--cream);
+  font-family: 'Nunito', sans-serif;
+  color: var(--text);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* ── PAGES ── */
+.page { display:none; flex-direction:column; height:100vh; overflow:hidden; }
+.page.active { display:flex; }
+
+/* ── HEADER ── */
+.header {
+  background: var(--white);
+  padding: 12px 16px 0;
+  padding-top: calc(12px + var(--tg-safe-top));
+  border-bottom: 1px solid rgba(108,63,232,0.08);
+  flex-shrink: 0;
+  box-shadow: 0 2px 16px rgba(108,63,232,0.06);
+  z-index: 50;
+}
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.logo {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--accent);
+}
+.logo em { font-style:normal; color: var(--accent2); }
+.logo small {
+  display: block;
+  font-family: 'Nunito', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+.hdr-right { display:flex; gap:8px; }
+.hdr-btn {
+  position: relative;
+  background: var(--accent);
+  border: none;
+  border-radius: 12px;
+  padding: 8px 14px;
+  color: white;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
+  box-shadow: 0 3px 12px rgba(108,63,232,0.35);
+  transition: transform 0.15s;
+}
+.hdr-btn:active { transform: scale(0.93); }
+.cart-badge {
+  position: absolute;
+  top: -5px; right: -5px;
+  background: var(--red);
+  color: white;
+  border-radius: 50%;
+  width: 18px; height: 18px;
+  font-size: 10px; font-weight: 900;
+  display: none; align-items: center; justify-content: center;
+}
+.cart-badge.show { display:flex; }
+.search-inp-wrap {
+  background: var(--cream2);
+  border-radius: 12px;
+  padding: 9px 14px;
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 12px;
+}
+.search-inp-wrap input {
+  border: none; background: transparent;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px; font-weight: 600;
+  color: var(--text); width: 100%;
+  outline: none;
+}
+.search-inp-wrap input::placeholder { color: var(--muted); }
+
+/* ── TABS ── */
+.tabs {
+  display: flex; gap: 8px;
+  padding: 0 0 12px;
+  overflow-x: auto; scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display:none; }
+.tab {
+  flex-shrink: 0;
+  padding: 7px 16px;
+  border-radius: 20px; border: none;
+  background: var(--cream);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800; font-size: 12px;
+  color: var(--muted); cursor: pointer;
+  transition: all 0.2s;
+}
+.tab.active { background: var(--accent); color: white; box-shadow: 0 3px 12px rgba(108,63,232,0.3); }
+
+/* ── SCROLL AREA ── */
+.scroll-area {
+  flex: 1; overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(80px + var(--tg-safe-bottom));
+}
+.scroll-area::-webkit-scrollbar { display:none; }
+
+/* ── HERO ── */
+.hero {
+  margin: 14px 16px;
+  background: linear-gradient(135deg, var(--accent) 0%, #9B6FFF 100%);
+  border-radius: 20px;
+  padding: 20px 22px;
+  position: relative; overflow: hidden;
+  box-shadow: 0 8px 28px rgba(108,63,232,0.28);
+}
+.hero::before {
+  content:''; position:absolute;
+  top:-40px; right:-40px;
+  width:160px; height:160px;
+  background: rgba(255,255,255,0.08); border-radius:50%;
+}
+.hero-tag {
+  display: inline-block;
+  background: rgba(255,255,255,0.2);
+  color: white; font-size:10px; font-weight:800;
+  letter-spacing:2px; text-transform:uppercase;
+  padding: 3px 10px; border-radius:20px; margin-bottom:8px;
+}
+.hero h2 {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 19px; font-weight:700;
+  color: white; line-height:1.25; margin-bottom:6px;
+}
+.hero p { color: rgba(255,255,255,0.8); font-size:12px; font-weight:600; }
+.hero-emoji { position:absolute; right:16px; top:50%; transform:translateY(-50%); font-size:58px; line-height:1; }
+
+/* ── SECTION TITLE ── */
+.sec-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 15px; font-weight:700; color: var(--text);
+  padding: 0 16px 12px;
+  display: flex; justify-content:space-between; align-items:center;
+}
+.sec-title span { font-family:'Nunito',sans-serif; font-size:12px; font-weight:700; color:var(--accent); cursor:pointer; }
+
+/* ── PRODUCT GRID ── */
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 16px 8px; }
+
+.card {
+  background: white; border-radius:16px;
+  overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,0.06);
+  cursor:pointer; transition:transform 0.15s;
+}
+.card:active { transform:scale(0.96); }
+.card-img {
+  font-size:46px; text-align:center;
+  padding:16px 8px 8px;
+  background: var(--cream); line-height:1;
+  display:block; position:relative;
+}
+.cbadge {
+  position:absolute; top:8px; left:8px;
+  font-size:8px; font-weight:900;
+  letter-spacing:0.5px; text-transform:uppercase;
+  padding:2px 7px; border-radius:20px; color:white;
+}
+.cbadge.hit { background:var(--accent); }
+.cbadge.sale { background:var(--red); }
+.cbadge.new { background:var(--green); }
+.cheart {
+  position:absolute; top:8px; right:8px;
+  width:26px; height:26px; background:white;
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:13px; box-shadow:0 2px 6px rgba(0,0,0,0.1);
+  cursor:pointer;
+}
+.card-body { padding:8px 10px 10px; }
+.card-store { font-size:9px; color:var(--accent); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px; }
+.card-name { font-weight:800; font-size:13px; color:var(--text); line-height:1.2; margin-bottom:2px; }
+.card-size { font-size:10px; color:var(--muted); font-weight:600; margin-bottom:6px; }
+.card-foot { display:flex; align-items:center; justify-content:space-between; }
+.card-price { font-size:13px; font-weight:900; color:var(--text); }
+.card-price .op { font-size:10px; color:var(--muted); text-decoration:line-through; display:block; font-weight:600; }
+.add-btn {
+  width:30px; height:30px; background:var(--accent);
+  color:white; border:none; border-radius:9px;
+  font-size:18px; font-weight:700; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 8px rgba(108,63,232,0.3);
+  transition:all 0.15s; flex-shrink:0;
+}
+.add-btn:active { transform:scale(0.88); }
+
+/* ── STORES LIST ── */
+.stores { padding:0 16px; display:flex; flex-direction:column; gap:8px; }
+.store-card {
+  background:white; border-radius:16px;
+  padding:14px; display:flex; align-items:center; gap:12px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.05); cursor:pointer;
+  transition:transform 0.15s;
+}
+.store-card:active { transform:scale(0.97); }
+.store-icon {
+  width:50px; height:50px; border-radius:14px;
+  background:var(--cream2); display:flex; align-items:center; justify-content:center;
+  font-size:26px; flex-shrink:0;
+}
+.store-info { flex:1; }
+.store-name { font-family:'Unbounded',sans-serif; font-size:13px; font-weight:700; color:var(--text); margin-bottom:2px; }
+.store-desc { font-size:11px; color:var(--muted); font-weight:600; margin-bottom:5px; }
+.store-tags { display:flex; gap:5px; flex-wrap:wrap; }
+.stag { background:var(--cream2); color:var(--accent); font-size:9px; font-weight:700; padding:2px 7px; border-radius:8px; }
+.store-right { text-align:right; flex-shrink:0; }
+.store-rating { font-size:12px; font-weight:800; color:var(--accent2); }
+.store-count { font-size:10px; color:var(--muted); font-weight:600; }
+
+/* ── BOTTOM NAV ── */
+.bnav {
+  position: fixed;
+  bottom:0; left:50%; transform:translateX(-50%);
+  width:100%; max-width:480px;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(20px);
+  padding: 10px 0 calc(12px + var(--tg-safe-bottom));
+  display:flex; justify-content:space-around;
+  border-top:1px solid rgba(108,63,232,0.08);
+  z-index:90;
+}
+.bn {
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  cursor:pointer; padding:4px 14px; border-radius:12px;
+  transition:background 0.15s; border:none; background:transparent;
+}
+.bn.active { background:rgba(108,63,232,0.08); }
+.bn-icon { font-size:20px; }
+.bn-label { font-size:9px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+.bn.active .bn-label { color:var(--accent); }
+
+/* ── OVERLAY ── */
+.overlay {
+  position:fixed; inset:0;
+  background:rgba(0,0,0,0.5);
+  z-index:200; display:none;
+  backdrop-filter:blur(4px);
+}
+.overlay.show { display:block; }
+
+/* ── CART MODAL ── */
+.cart-modal {
+  position:fixed;
+  bottom:0; left:50%; transform:translateX(-50%) translateY(100%);
+  width:100%; max-width:480px;
+  background:white; border-radius:24px 24px 0 0;
+  z-index:300; padding:14px 16px calc(32px + var(--tg-safe-bottom));
+  transition:transform 0.35s cubic-bezier(0.34,1.3,0.64,1);
+  max-height:82vh; overflow-y:auto;
+}
+.cart-modal.show { transform:translateX(-50%) translateY(0); }
+.modal-handle { width:36px; height:3px; background:#E0E0E0; border-radius:3px; margin:0 auto 14px; }
+.modal-title { font-family:'Unbounded',sans-serif; font-size:17px; font-weight:700; color:var(--text); margin-bottom:14px; }
+
+.cart-item {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 0; border-bottom:1px solid var(--cream2);
+}
+.ci-emoji { font-size:30px; }
+.ci-info { flex:1; }
+.ci-name { font-weight:800; font-size:13px; color:var(--text); margin-bottom:1px; }
+.ci-store { font-size:10px; color:var(--accent); font-weight:700; margin-bottom:1px; }
+.ci-price { font-size:12px; color:var(--muted); font-weight:600; }
+.ci-qty { display:flex; align-items:center; gap:6px; }
+.qbtn {
+  width:26px; height:26px; border-radius:7px; border:none;
+  background:var(--cream2); font-size:15px; font-weight:800;
+  cursor:pointer; color:var(--accent);
+  display:flex; align-items:center; justify-content:center;
+}
+.qnum { font-size:13px; font-weight:900; color:var(--text); min-width:18px; text-align:center; }
+
+.cart-total {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:14px 0 4px; border-top:2px solid var(--cream2); margin-top:6px;
+}
+.ct-label { font-size:14px; font-weight:700; color:var(--muted); }
+.ct-sum { font-family:'Unbounded',sans-serif; font-size:18px; font-weight:900; color:var(--text); }
+
+.order-btn {
+  width:100%; background:linear-gradient(135deg, var(--accent), #9B6FFF);
+  color:white; border:none; border-radius:14px;
+  padding:16px; font-family:'Nunito',sans-serif;
+  font-size:14px; font-weight:900; cursor:pointer;
+  margin-top:14px; box-shadow:0 5px 18px rgba(108,63,232,0.38);
+  transition:transform 0.15s; letter-spacing:0.3px;
+}
+.order-btn:active { transform:scale(0.97); }
+
+.empty-cart {
+  text-align:center; padding:36px 0;
+  font-size:16px; font-weight:700; color:var(--muted); line-height:1.8;
+}
+
+/* ── PRODUCT DETAIL ── */
+.detail-hero {
+  background:linear-gradient(145deg, #E8E0F0, #D4C9E8);
+  height:260px; display:flex; align-items:center; justify-content:center;
+  font-size:90px; position:relative; flex-shrink:0;
+}
+.back-btn {
+  position:absolute; top:16px; left:16px;
+  width:36px; height:36px; background:rgba(255,255,255,0.8);
+  border-radius:50%; border:none; font-size:16px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  backdrop-filter:blur(8px);
+}
+.fav-btn {
+  position:absolute; top:16px; right:16px;
+  width:36px; height:36px; background:rgba(255,255,255,0.8);
+  border-radius:50%; border:none; font-size:18px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  backdrop-filter:blur(8px);
+}
+.detail-content { padding:20px 16px; flex:1; overflow-y:auto; }
+.detail-store { font-size:10px; color:var(--accent); font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
+.detail-name { font-family:'Unbounded',sans-serif; font-size:20px; font-weight:700; line-height:1.2; margin-bottom:6px; }
+.detail-price-row { display:flex; align-items:baseline; gap:8px; margin-bottom:20px; }
+.detail-price { font-size:20px; font-weight:900; }
+.detail-old { font-size:13px; color:var(--muted); text-decoration:line-through; font-weight:600; }
+.detail-label { font-size:10px; color:var(--muted); font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; }
+.sizes { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+.size-btn {
+  width:40px; height:40px; border-radius:50%; border:1.5px solid transparent;
+  font-size:11px; font-weight:800; cursor:pointer; transition:all 0.15s;
+  background:var(--cream2); color:var(--muted);
+  display:flex; align-items:center; justify-content:center;
+}
+.size-btn.active { background:var(--accent); color:white; border-color:var(--accent); }
+.detail-cta {
+  width:100%; background:var(--text); color:white;
+  border:none; border-radius:14px; padding:16px;
+  font-family:'Nunito',sans-serif; font-size:14px; font-weight:900;
+  cursor:pointer; margin-bottom:10px;
+  box-shadow:0 4px 16px rgba(26,26,46,0.2);
+  transition:transform 0.15s;
+}
+.detail-cta:active { transform:scale(0.97); }
+.detail-sec {
+  width:100%; background:transparent; color:var(--text);
+  border:1.5px solid var(--cream2); border-radius:14px; padding:15px;
+  font-family:'Nunito',sans-serif; font-size:14px; font-weight:700;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;
+}
+
+/* ── PROMO STRIP ── */
+.promo {
+  margin:0 16px 16px;
+  background:linear-gradient(135deg,#1A1A2E,#2D2B55);
+  border-radius:16px; padding:16px 18px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.promo-text h3 { font-family:'Unbounded',sans-serif; font-size:13px; font-weight:700; color:white; margin-bottom:3px; }
+.promo-text p { font-size:11px; color:rgba(255,255,255,0.55); font-weight:600; }
+.promo-emoji { font-size:38px; }
+
+/* ── SALE BADGE ── */
+.sale-hero {
+  background:linear-gradient(135deg,var(--red),#FF6B35);
+  margin:14px 16px; border-radius:20px; padding:20px 22px;
+  position:relative; overflow:hidden;
+  box-shadow:0 8px 28px rgba(255,71,87,0.28);
+}
+.sale-hero::before { content:''; position:absolute; top:-40px; right:-40px; width:160px; height:160px; background:rgba(255,255,255,0.08); border-radius:50%; }
+.sale-hero .hero-tag { background:rgba(255,255,255,0.2); }
+
+/* Animations */
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+.grid { animation: fadeUp 0.25s ease; }
+.stores { animation: fadeUp 0.25s ease; }
+
+/* ── SEARCH RESULTS ── */
+.no-results { text-align:center; padding:48px 20px; color:var(--muted); font-size:14px; font-weight:700; }
+</style>
+</head>
+<body>
+
+<!-- ══════ PAGE: MAIN ══════ -->
+<div class="page active" id="page-main">
+  <div class="header">
+    <div class="header-row">
+      <div class="logo">Kiyi<em>mello</em><small>Toshkent moda</small></div>
+      <div class="hdr-right">
+        <button class="hdr-btn" onclick="toggleCart()">
+          🛍
+          <span class="cart-badge" id="cartBadge">0</span>
+        </button>
+      </div>
+    </div>
+    <div class="search-inp-wrap">
+      <span>🔍</span>
+      <input type="text" placeholder="Поиск одежды, магазинов..." id="searchInp" oninput="doSearch(this.value)">
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchCat('women',this)">👗 Женское</button>
+      <button class="tab" onclick="switchCat('men',this)">👔 Мужское</button>
+      <button class="tab" onclick="switchCat('kids',this)">👶 Детское</button>
+      <button class="tab" onclick="switchCat('sale',this)">🔥 Акции</button>
+    </div>
+  </div>
+
+  <div class="scroll-area" id="main-scroll">
+    <!-- hero injected by JS -->
+    <div id="hero-wrap"></div>
+    <div class="sec-title" id="grid-title">✨ Популярное <span onclick="alert('Скоро больше товаров!')">Всё →</span></div>
+    <div class="grid" id="main-grid"></div>
+    <div class="promo">
+      <div class="promo-text"><h3>Стань партнёром</h3><p>Открой магазин на Kiyimello</p></div>
+      <div class="promo-emoji">🤝</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PAGE: STORES ══════ -->
+<div class="page" id="page-stores">
+  <div class="header">
+    <div class="header-row">
+      <div class="logo">Киyi<em>mello</em><small>Магазины</small></div>
+      <button class="hdr-btn" onclick="toggleCart()">🛍 <span class="cart-badge" id="cartBadge2">0</span></button>
+    </div>
+    <div class="search-inp-wrap" style="margin-bottom:12px;">
+      <span>🔍</span>
+      <input type="text" placeholder="Найти магазин...">
+    </div>
+  </div>
+  <div class="scroll-area">
+    <div style="margin:14px 16px 8px;">
+      <div class="hero" style="background:linear-gradient(135deg,#00C47A,#00A86B);box-shadow:0 8px 28px rgba(0,196,122,0.28);">
+        <div class="hero-tag">🏪 Партнёры</div>
+        <h2>200+ магазинов<br>Ташкента</h2>
+        <p>Все районы в одном месте</p>
+        <div class="hero-emoji">🛍️</div>
+      </div>
+    </div>
+    <div class="sec-title">⭐ Топ магазины</div>
+    <div class="stores" id="stores-list"></div>
+    <div style="height:16px;"></div>
+  </div>
+</div>
+
+<!-- ══════ PAGE: FAVORITES ══════ -->
+<div class="page" id="page-favs">
+  <div class="header">
+    <div class="header-row">
+      <div class="logo">Kiyi<em>mello</em><small>Избранное</small></div>
+      <button class="hdr-btn" onclick="toggleCart()">🛍 <span class="cart-badge" id="cartBadge3">0</span></button>
+    </div>
+  </div>
+  <div class="scroll-area">
+    <div class="sec-title" style="padding-top:14px;">❤️ Избранное</div>
+    <div class="grid" id="fav-grid"></div>
+    <div class="no-results" id="fav-empty" style="display:none;">
+      ❤️<br>Пока ничего нет<br><span style="font-size:12px;font-weight:600;">Нажми 🤍 на товар чтобы сохранить</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PAGE: PROFILE ══════ -->
+<div class="page" id="page-profile">
+  <div class="header">
+    <div class="header-row">
+      <div class="logo">Kiyi<em>mello</em><small>Профиль</small></div>
+      <button class="hdr-btn" onclick="toggleCart()">🛍 <span class="cart-badge" id="cartBadge4">0</span></button>
+    </div>
+  </div>
+  <div class="scroll-area">
+    <div style="padding:20px 16px;">
+      <div style="text-align:center; padding:24px 0 20px;">
+        <div style="font-size:60px; margin-bottom:12px;">👤</div>
+        <div id="tg-name" style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px;">Пользователь</div>
+        <div id="tg-username" style="font-size:12px;color:var(--muted);font-weight:600;">@username</div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:20px;">
+        <div style="flex:1;background:white;border-radius:14px;padding:16px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+          <div style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:900;color:var(--accent);" id="orders-count">0</div>
+          <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:2px;">Заказов</div>
+        </div>
+        <div style="flex:1;background:white;border-radius:14px;padding:16px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+          <div style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:900;color:var(--red);" id="favs-count">0</div>
+          <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:2px;">Избранных</div>
+        </div>
+        <div style="flex:1;background:white;border-radius:14px;padding:16px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+          <div style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:900;color:var(--green);" id="cart-count">0</div>
+          <div style="font-size:11px;color:var(--muted);font-weight:700;margin-top:2px;">В корзине</div>
+        </div>
+      </div>
+
+      ${['🛍 Мои заказы','❤️ Избранное','📍 Адреса доставки','🔔 Уведомления','🌐 Язык (Рус / Ўзб)','🏪 Стать продавцом','💬 Поддержка'].map(item => `
+        <div onclick="alert('Скоро!')" style="background:white;border-radius:14px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,0.04);cursor:pointer;">
+          <span style="font-size:14px;font-weight:700;">${item}</span>
+          <span style="color:var(--muted);">→</span>
+        </div>
+      `).join('')}
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PAGE: PRODUCT DETAIL ══════ -->
+<div class="page" id="page-detail">
+  <div class="detail-hero" id="detail-hero">
+    <button class="back-btn" onclick="goBack()">←</button>
+    <button class="fav-btn" id="detail-fav-btn" onclick="toggleDetailFav()">🤍</button>
+    <span id="detail-emoji"></span>
+  </div>
+  <div class="detail-content">
+    <div class="detail-store" id="detail-store"></div>
+    <div class="detail-name" id="detail-name"></div>
+    <div class="detail-price-row">
+      <span class="detail-price" id="detail-price"></span>
+      <span class="detail-old" id="detail-old"></span>
+    </div>
+    <div class="detail-label">Размер</div>
+    <div class="sizes" id="detail-sizes"></div>
+    <button class="detail-cta" id="detail-add-btn" onclick="addDetailToCart()">🛍 Добавить в корзину</button>
+    <button class="detail-sec" onclick="toggleDetailFav()"><span id="detail-fav-text">🤍 Сохранить</span></button>
+  </div>
+</div>
+
+<!-- ══════ BOTTOM NAV ══════ -->
+<div class="bnav" id="bnav">
+  <button class="bn active" onclick="showPage('main',this)"><span class="bn-icon">🏠</span><span class="bn-label">Главная</span></button>
+  <button class="bn" onclick="showPage('stores',this)"><span class="bn-icon">🏪</span><span class="bn-label">Магазины</span></button>
+  <button class="bn" onclick="showPage('favs',this);renderFavs()"><span class="bn-icon">❤️</span><span class="bn-label">Избранное</span></button>
+  <button class="bn" onclick="toggleCart()"><span class="bn-icon">🛍️</span><span class="bn-label">Корзина</span></button>
+  <button class="bn" onclick="showPage('profile',this);renderProfile()"><span class="bn-icon">👤</span><span class="bn-label">Профиль</span></button>
+</div>
+
+<!-- ══════ OVERLAY + CART ══════ -->
+<div class="overlay" id="overlay" onclick="toggleCart()"></div>
+<div class="cart-modal" id="cartModal">
+  <div class="modal-handle"></div>
+  <div class="modal-title">🛍 Корзина</div>
+  <div id="cartItems"></div>
+  <div class="cart-total" id="cartTotal" style="display:none;">
+    <span class="ct-label">Итого:</span>
+    <span class="ct-sum" id="cartSum"></span>
+  </div>
+  <button class="order-btn" id="orderBtn" onclick="sendOrder()" style="display:none;">📲 Заказать через Telegram</button>
+</div>
+
+<script>
+// ══ TELEGRAM INIT ══
+const tg = window.Telegram?.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+  tg.setHeaderColor('#6C3FE8');
+}
+
+// ══ DATA ══
+const WOMEN = [
+  {id:'w1',emoji:'👗',name:'Шифоновое платье',store:'Zilola Boutique',price:189000,old:240000,sizes:['XS','S','M','L','XL'],badge:'Хит',bt:'hit'},
+  {id:'w2',emoji:'👚',name:'Оверсайз худи',store:'FashionHub TKT',price:145000,old:null,sizes:['S','M','L','XL','XXL'],badge:'Новинка',bt:'new'},
+  {id:'w3',emoji:'👖',name:'Джинсы Mom fit',store:'Denim World',price:210000,old:280000,sizes:['XS','S','M','L'],badge:'-25%',bt:'sale'},
+  {id:'w4',emoji:'🧥',name:'Тренч весенний',store:'Klassik Style',price:350000,old:null,sizes:['S','M','L'],badge:'',bt:''},
+  {id:'w5',emoji:'👠',name:'Туфли каблук',store:'ShoeLand UZ',price:280000,old:350000,sizes:['36','37','38','39','40'],badge:'-20%',bt:'sale'},
+  {id:'w6',emoji:'👜',name:'Сумка кожаная',store:'Klassik Style',price:420000,old:null,sizes:['Один размер'],badge:'Новинка',bt:'new'},
+];
+const MEN = [
+  {id:'m1',emoji:'👔',name:'Рубашка оверсайз',store:'MenStyle TKT',price:145000,old:null,sizes:['S','M','L','XL','XXL'],badge:'Хит',bt:'hit'},
+  {id:'m2',emoji:'🧥',name:'Бомбер чёрный',store:'Urban Bros',price:320000,old:400000,sizes:['M','L','XL','XXL'],badge:'-20%',bt:'sale'},
+  {id:'m3',emoji:'👟',name:'Кроссовки кожа',store:'Urban Feet',price:480000,old:null,sizes:['40','41','42','43','44'],badge:'Новинка',bt:'new'},
+  {id:'m4',emoji:'👖',name:'Карго брюки',store:'MenStyle TKT',price:175000,old:220000,sizes:['S','M','L','XL'],badge:'-20%',bt:'sale'},
+  {id:'m5',emoji:'🧢',name:'Кепка Snapback',store:'Urban Bros',price:65000,old:null,sizes:['Один размер'],badge:'',bt:''},
+  {id:'m6',emoji:'🩳',name:'Шорты летние',store:'SportFit TKT',price:85000,old:null,sizes:['S','M','L','XL','XXL'],badge:'Хит',bt:'hit'},
+];
+const KIDS = [
+  {id:'k1',emoji:'🧒',name:'Костюм малыша',store:'Baby World UZ',price:120000,old:null,sizes:['68','74','80','86','92'],badge:'Хит',bt:'hit'},
+  {id:'k2',emoji:'👟',name:'Кеды детские',store:'KidsShop TKT',price:95000,old:120000,sizes:['22','24','26','28','30'],badge:'-20%',bt:'sale'},
+  {id:'k3',emoji:'🎒',name:'Школьный рюкзак',store:'Baby World UZ',price:145000,old:null,sizes:['Один размер'],badge:'Новинка',bt:'new'},
+  {id:'k4',emoji:'🧣',name:'Шапка+шарф набор',store:'KidsShop TKT',price:75000,old:null,sizes:['48','50','52','54'],badge:'',bt:''},
+];
+const SALE = [
+  {id:'s1',emoji:'👗',name:'Летнее платье',store:'Zilola Boutique',price:99000,old:240000,sizes:['XS','S','M','L'],badge:'-58%',bt:'sale'},
+  {id:'s2',emoji:'🧥',name:'Зимняя куртка',store:'Klassik Style',price:280000,old:650000,sizes:['S','M','L','XL'],badge:'-56%',bt:'sale'},
+  {id:'s3',emoji:'👟',name:'Кроссовки',store:'Urban Feet',price:190000,old:480000,sizes:['38','39','40','41','42'],badge:'-60%',bt:'sale'},
+  {id:'s4',emoji:'👖',name:'Джинсы классика',store:'Denim World',price:110000,old:280000,sizes:['XS','S','M','L'],badge:'-60%',bt:'sale'},
+  {id:'s5',emoji:'👔',name:'Рубашка Slim Fit',store:'MenStyle TKT',price:65000,old:145000,sizes:['S','M','L','XL'],badge:'-55%',bt:'sale'},
+  {id:'s6',emoji:'👜',name:'Сумка кроссбоди',store:'Klassik Style',price:180000,old:420000,sizes:['Один размер'],badge:'-57%',bt:'sale'},
+];
+const STORES = [
+  {icon:'👗',name:'Zilola Boutique',desc:'Женская одежда, платья',district:'Чиланзар',rating:4.9,items:87,tags:['Женское','Платья']},
+  {icon:'👔',name:'MenStyle TKT',desc:'Мужской смарт-кэжуал',district:'Юнусабад',rating:4.8,items:63,tags:['Мужское','Деловое']},
+  {icon:'👟',name:'Urban Feet',desc:'Обувь для всей семьи',district:'Мирзо-Улугбек',rating:4.7,items:124,tags:['Обувь','Спорт']},
+  {icon:'👶',name:'Baby World UZ',desc:'Детская одежда 0-14',district:'Сергели',rating:4.9,items:203,tags:['Детское']},
+  {icon:'💎',name:'Klassik Style',desc:'Премиум одежда',district:'Шайхантахур',rating:4.8,items:56,tags:['Премиум']},
+  {icon:'🏃',name:'SportFit TKT',desc:'Спорт и фитнес',district:'Яккасарай',rating:4.6,items:98,tags:['Спорт']},
+  {icon:'👖',name:'Denim World',desc:'Джинсы всех фасонов',district:'Алмазар',rating:4.7,items:74,tags:['Джинсы']},
+  {icon:'🧒',name:'KidsShop TKT',desc:'Детские товары',district:'Бектемир',rating:4.8,items:156,tags:['Детское']},
+];
+
+const HEROES = {
+  women: {tag:'🌟 Новая коллекция',h:'Весна 2025<br>уже здесь',p:'Свежие поступления каждый день',e:'👗',bg:'linear-gradient(135deg,#6C3FE8,#9B6FFF)'},
+  men: {tag:'💼 Стиль',h:'Мужская<br>классика',p:'Оверсайз, смарт-кэжуал',e:'👔',bg:'linear-gradient(135deg,#1A1A2E,#2D2B55)'},
+  kids: {tag:'🧸 Для малышей',h:'Детская мода<br>Ташкента',p:'Качество · Комфорт · Стиль',e:'👶',bg:'linear-gradient(135deg,#FF7043,#FFB74D)'},
+  sale: {tag:'⚡ Только сегодня',h:'Скидки до<br>60%!',p:'Успей купить по лучшей цене',e:'🏷️',bg:'linear-gradient(135deg,#FF4757,#FF6B35)'},
+};
+
+// ══ STATE ══
+let cart = [];
+let favs = new Set();
+let currentCat = 'women';
+let currentItem = null;
+let selectedSize = null;
+let prevPage = 'main';
+let orderCount = 0;
+
+// ══ FORMAT ══
+function fmt(p){ return p.toLocaleString('ru')+' сум'; }
+function allItems(){ return [...WOMEN,...MEN,...KIDS,...SALE]; }
+function catItems(cat){ return {women:WOMEN,men:MEN,kids:KIDS,sale:SALE}[cat]||WOMEN; }
+
+// ══ RENDER GRID ══
+function renderGrid(items, containerId){
+  const g = document.getElementById(containerId);
+  if(!items.length){ g.innerHTML='<div class="no-results" style="grid-column:1/-1">🔍 Ничего не найдено</div>'; return; }
+  g.innerHTML = items.map(it=>`
+    <div class="card" onclick="openDetail('${it.id}')">
+      <div class="card-img">
+        ${it.badge?`<div class="cbadge ${it.bt}">${it.badge}</div>`:''}
+        <div class="cheart" onclick="toggleFav(event,'${it.id}')" id="heart-${it.id}">${favs.has(it.id)?'❤️':'🤍'}</div>
+        ${it.emoji}
+      </div>
+      <div class="card-body">
+        <div class="card-store">${it.store}</div>
+        <div class="card-name">${it.name}</div>
+        <div class="card-size">📏 ${it.sizes[0]}${it.sizes.length>1?'-'+it.sizes[it.sizes.length-1]:''}</div>
+        <div class="card-foot">
+          <div class="card-price">
+            ${it.old?`<span class="op">${fmt(it.old)}</span>`:''}
+            ${fmt(it.price)}
+          </div>
+          <button class="add-btn" onclick="quickAdd(event,'${it.id}')">+</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ══ HERO ══
+function renderHero(cat){
+  const h = HEROES[cat];
+  document.getElementById('hero-wrap').innerHTML = `
+    <div class="hero" style="background:${h.bg};box-shadow:0 8px 28px rgba(0,0,0,0.2);">
+      <div class="hero-tag">${h.tag}</div>
+      <h2>${h.h}</h2><p>${h.p}</p>
+      <div class="hero-emoji">${h.e}</div>
+    </div>`;
+}
+
+// ══ SWITCH CAT ══
+function switchCat(cat, el){
+  currentCat = cat;
+  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderHero(cat);
+  renderGrid(catItems(cat),'main-grid');
+  document.getElementById('main-scroll').scrollTo(0,0);
+}
+
+// ══ SEARCH ══
+function doSearch(q){
+  if(!q.trim()){ renderGrid(catItems(currentCat),'main-grid'); return; }
+  const r = allItems().filter(i=>i.name.toLowerCase().includes(q.toLowerCase())||i.store.toLowerCase().includes(q.toLowerCase()));
+  renderGrid(r,'main-grid');
+}
+
+// ══ STORES ══
+function renderStores(){
+  document.getElementById('stores-list').innerHTML = STORES.map(s=>`
+    <div class="store-card">
+      <div class="store-icon">${s.icon}</div>
+      <div class="store-info">
+        <div class="store-name">${s.name}</div>
+        <div class="store-desc">${s.desc} · ${s.district}</div>
+        <div class="store-tags">${s.tags.map(t=>`<span class="stag">${t}</span>`).join('')}</div>
+      </div>
+      <div class="store-right">
+        <div class="store-rating">★ ${s.rating}</div>
+        <div class="store-count">${s.items} товаров</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ══ FAV ══
+function toggleFav(e,id){
+  e.stopPropagation();
+  favs.has(id)?favs.delete(id):favs.add(id);
+  const h = document.getElementById('heart-'+id);
+  if(h) h.textContent = favs.has(id)?'❤️':'🤍';
+  updateBadges();
+}
+function renderFavs(){
+  const items = allItems().filter(i=>favs.has(i.id));
+  const g = document.getElementById('fav-grid');
+  const empty = document.getElementById('fav-empty');
+  if(!items.length){ g.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  renderGrid(items,'fav-grid');
+}
+
+// ══ PRODUCT DETAIL ══
+function openDetail(id){
+  const item = allItems().find(i=>i.id===id);
+  if(!item) return;
+  currentItem = item;
+  selectedSize = item.sizes[0];
+  prevPage = document.querySelector('.page.active').id.replace('page-','');
+  document.getElementById('detail-emoji').textContent = item.emoji;
+  document.getElementById('detail-store').textContent = item.store;
+  document.getElementById('detail-name').textContent = item.name;
+  document.getElementById('detail-price').textContent = fmt(item.price);
+  document.getElementById('detail-old').textContent = item.old?fmt(item.old):'';
+  document.getElementById('detail-fav-btn').textContent = favs.has(id)?'❤️':'🤍';
+  document.getElementById('detail-fav-text').textContent = favs.has(id)?'❤️ В избранном':'🤍 Сохранить';
+  document.getElementById('detail-sizes').innerHTML = item.sizes.map((s,i)=>`
+    <button class="size-btn ${i===0?'active':''}" onclick="selectSize(this,'${s}')">${s}</button>
+  `).join('');
+  document.getElementById('bnav').style.display='none';
+  showPage('detail',null);
+}
+function selectSize(btn,size){
+  selectedSize = size;
+  document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function addDetailToCart(){
+  if(!currentItem) return;
+  addToCartById(currentItem.id);
+  const btn = document.getElementById('detail-add-btn');
+  btn.textContent='✓ Добавлено!';
+  btn.style.background='var(--green)';
+  setTimeout(()=>{ btn.textContent='🛍 Добавить в корзину'; btn.style.background='var(--text)'; },1200);
+}
+function toggleDetailFav(){
+  if(!currentItem) return;
+  favs.has(currentItem.id)?favs.delete(currentItem.id):favs.add(currentItem.id);
+  const liked = favs.has(currentItem.id);
+  document.getElementById('detail-fav-btn').textContent = liked?'❤️':'🤍';
+  document.getElementById('detail-fav-text').textContent = liked?'❤️ В избранном':'🤍 Сохранить';
+  updateBadges();
+}
+function goBack(){
+  document.getElementById('bnav').style.display='flex';
+  showPage(prevPage, document.querySelectorAll('.bn')[['main','stores','favs','cart','profile'].indexOf(prevPage)]);
+}
+
+// ══ CART ══
+function addToCartById(id){
+  const item = allItems().find(i=>i.id===id);
+  if(!item) return;
+  const ex = cart.find(c=>c.id===id);
+  ex?ex.qty++:cart.push({...item,qty:1});
+  updateBadges();
+}
+function quickAdd(e,id){
+  e.stopPropagation();
+  addToCartById(id);
+  const btn = e.target;
+  btn.textContent='✓'; btn.style.background='var(--green)';
+  setTimeout(()=>{ btn.textContent='+'; btn.style.background='var(--accent)'; },800);
+}
+function changeQty(id,d){
+  const item = cart.find(c=>c.id===id);
+  if(!item) return;
+  item.qty+=d;
+  if(item.qty<=0) cart=cart.filter(c=>c.id!==id);
+  updateBadges(); renderCartModal();
+}
+function updateBadges(){
+  const total = cart.reduce((s,c)=>s+c.qty,0);
+  ['cartBadge','cartBadge2','cartBadge3','cartBadge4'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){ el.textContent=total; el.classList.toggle('show',total>0); }
+  });
+}
+function toggleCart(){
+  const m=document.getElementById('cartModal');
+  const o=document.getElementById('overlay');
+  const open=m.classList.contains('show');
+  if(!open) renderCartModal();
+  m.classList.toggle('show',!open);
+  o.classList.toggle('show',!open);
+}
+function renderCartModal(){
+  const container=document.getElementById('cartItems');
+  const totalEl=document.getElementById('cartTotal');
+  const btn=document.getElementById('orderBtn');
+  const sum=document.getElementById('cartSum');
+  if(!cart.length){
+    container.innerHTML='<div class="empty-cart">🛍️<br>Корзина пуста<br><span style="font-size:12px;font-weight:600;color:var(--muted)">Добавьте товары!</span></div>';
+    totalEl.style.display='none'; btn.style.display='none'; return;
+  }
+  container.innerHTML=cart.map(c=>`
+    <div class="cart-item">
+      <span class="ci-emoji">${c.emoji}</span>
+      <div class="ci-info">
+        <div class="ci-name">${c.name}</div>
+        <div class="ci-store">${c.store}</div>
+        <div class="ci-price">${fmt(c.price)} / шт</div>
+      </div>
+      <div class="ci-qty">
+        <button class="qbtn" onclick="changeQty('${c.id}',-1)">−</button>
+        <span class="qnum">${c.qty}</span>
+        <button class="qbtn" onclick="changeQty('${c.id}',1)">+</button>
+      </div>
+    </div>
+  `).join('');
+  const total=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  sum.textContent=fmt(total);
+  totalEl.style.display='flex'; btn.style.display='flex';
+}
+
+// ══ TELEGRAM ORDER ══
+function sendOrder(){
+  if(!cart.length) return;
+  orderCount++;
+  const total=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const list=cart.map(c=>`• ${c.emoji} ${c.name} (${c.store}) × ${c.qty} = ${fmt(c.price*c.qty)}`).join('\n');
+  const msg=`🛍 НОВЫЙ ЗАКАЗ — Kiyimello\n\n${list}\n\n💰 ИТОГО: ${fmt(total)}\n\n📍 Укажите адрес доставки в Ташкенте`;
+  if(tg){
+    tg.sendData(JSON.stringify({type:'order',items:cart,total}));
+  } else {
+    window.open(`https://t.me/kiyimello?text=${encodeURIComponent(msg)}`,'_blank');
+  }
+  cart=[];
+  updateBadges();
+  toggleCart();
+  document.getElementById('cartModal').classList.remove('show');
+  document.getElementById('overlay').classList.remove('show');
+  if(tg) tg.showPopup({title:'✅ Заказ отправлен!',message:'Мы свяжемся с вами в ближайшее время.',buttons:[{type:'ok'}]});
+  else alert('✅ Заказ отправлен! Мы свяжемся с вами.');
+}
+
+// ══ PAGES ══
+function showPage(name, navEl){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(name!=='detail'){
+    document.querySelectorAll('.bn').forEach(b=>b.classList.remove('active'));
+    if(navEl) navEl.classList.add('active');
+    document.getElementById('bnav').style.display='flex';
+  }
+}
+
+// ══ PROFILE ══
+function renderProfile(){
+  if(tg?.initDataUnsafe?.user){
+    const u=tg.initDataUnsafe.user;
+    document.getElementById('tg-name').textContent=(u.first_name+' '+(u.last_name||'')).trim();
+    document.getElementById('tg-username').textContent=u.username?'@'+u.username:'';
+  }
+  document.getElementById('orders-count').textContent=orderCount;
+  document.getElementById('favs-count').textContent=favs.size;
+  document.getElementById('cart-count').textContent=cart.reduce((s,c)=>s+c.qty,0);
+}
+
+// ══ INIT ══
+renderHero('women');
+renderGrid(WOMEN,'main-grid');
+renderStores();
+</script>
+</body>
+</html>
